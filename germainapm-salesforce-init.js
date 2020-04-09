@@ -1,6 +1,7 @@
-/* global GermainAPM, GermainAPMSalesforceUtils */
-GermainAPM.init({
-    beacon_url: 'https://${domain}/ingestion/beacon',
+/* global GermainAPM, GermainAPMSalesforceUtils, beaconUrl, appName, serverHost */
+
+GermainAPM.init(beaconUrl,
+{
     AsyncMonitoring: {enabled: true, queryStringGenerator: GermainAPMSalesforceUtils.xhrQueryStringGenerator, taggingEnabled: false},
     ChangeMonitoring: {enabled: true, eventInit: "page_ready"},
     ClickMonitoring: {enabled: true,
@@ -12,7 +13,7 @@ GermainAPM.init({
     ConsoleMonitoring: {enabled: true},
     CpuMonitoring: {enabled: false, repeatSeconds: 60, samplesAveragedPerRound: 12, sampleTimeMillis: 2000, eventInit: "page_ready"},
     DomMonitoring: {enabled: true, eventInit: "page_ready", pushInterval: 10,
-        pushFullInterval: 30, changesCountToSendFullBody: 500, dataTimeout: 30000, excludeAriaAttributes: true /*,excludeAttributes:[],excludeIds:[]*/},
+        pushFullInterval: 300, dataTimeout: 30000, excludeAriaAttributes: true /*,excludeAttributes:[],excludeIds:[]*/},
     FetchMonitoring: {enabled: true},
     FocusMonitoring: {enabled: true, pushInterval: 15, eventInit: "page_ready"},
     IframeMonitoring: {enabled: false, eventInit: "page_ready"},
@@ -27,6 +28,16 @@ GermainAPM.init({
     ResizeMonitoring: {enabled: true, eventInit: "dom_loaded"},
     RT: {enabled: true},
     ScriptingMonitoring: {enabled: true},
+    DebuggerMonitoring: {
+        enabled: false,
+        profilePageLoad: true,
+        profilerMaxSeconds: 30,
+        chrome: { // Requires the germainAPM Chrome extension
+            useWebSocket: true, // True requires Chrome to be launched with remote-debugging-port arg. False causes a warning banner in the UI.
+            webSocketPort: 9922, // chrome.exe --remote-debugging-port=9922
+            profilerSamplingInterval: 20 // milliseconds
+        }
+    },
     ScrollMonitoring: {enabled: true, snapshotInterval: 1000, pushInterval: 15, eventInit: "page_ready"},
     StaticResourcesMonitoring: {enabled: true, eventInit: "page_ready"},
     VisibilityMonitoring: {enabled: true, eventInit: "page_ready"},
@@ -40,6 +51,7 @@ GermainAPM.init({
     RESPONSE_BODY_PARSER: null,
     REQUEST_BODY_MONITORING: true, // catch POST request body
     SEND_SYNC_ON_UNLOAD: true, // this only applies when the navigator.sendBeacon is unavailable (IE)
+    WITH_CREDENTIALS: false, // send requests with credentials/cookies
     USER_CLICK: {
         count: 0,
         refreshInterval: 15, // (in seconds) we check periodically if we can close current user click txn and send current cum. txn
@@ -51,12 +63,12 @@ GermainAPM.init({
         labelGenerator: GermainAPMSalesforceUtils.viewLookup
     },
     EXCLUDE_URLS: [// exclude data points from monitoring by full URL (including query string)
-        /germainapm-.+-component.js/i,
-        /germainapm-.+-init.js/i,
+        /germainapm.*\.js/i,
         /cometd\/replay/
     ]
 }, {
-    appName: 'Salesforce',
+    appName: appName || 'Salesforce',
+    serverHost: serverHost,
     username: GermainAPMSalesforceUtils.usernameLookup,
     session: GermainAPMSalesforceUtils.sessionLookup,
     sequence: BOOMR.utils.session.getSequence

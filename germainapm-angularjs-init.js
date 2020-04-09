@@ -1,12 +1,14 @@
-/* global GermainAPM */
-GermainAPM.init({
-    beacon_url: 'https://${domain}/ingestion/beacon',
+/* global GermainAPM, beaconUrl, appName, serverHost */
+
+GermainAPM.init(beaconUrl,
+{
     AsyncMonitoring: {enabled: true, taggingEnabled: false},
     FetchMonitoring: {enabled: true},
     RT: {enabled: true},
     IframeMonitoring: {enabled: true},
     WebSocketMonitoring: {enabled: false},
     ClickMonitoring: {enabled: true, frameMonitoringEnabled: true, fullMonitoringEnabled: true, eventInit: "page_ready"},
+    CpuMonitoring: {enabled: false, repeatSeconds: 60, samplesAveragedPerRound: 12, sampleTimeMillis: 2000, eventInit: "page_ready"},
     FocusMonitoring: {enabled: true, pushInterval: 15, eventInit: "page_ready"},
     InputMonitoring: {enabled: true},
     MouseMonitoring: {enabled: true, frameMonitoringEnabled: true, snapshotInterval: 100,
@@ -18,10 +20,20 @@ GermainAPM.init({
     InactivityMonitoring: {enabled: true, eventInit: "page_ready", threshold: 30},
     StaticResourcesMonitoring: {enabled: true, eventInit: "page_ready", cssMonitoringEnabled: true,
         cssParsingEnabled: true, imagesMonitoringEnabled: true, cacheEnabled: true},
+    ScriptingMonitoring: {enabled: true},
+    DebuggerMonitoring: {
+        enabled: false,
+        profilePageLoad: true,
+        profilerMaxSeconds: 30,
+        chrome: { // Requires the germainAPM Chrome extension
+            useWebSocket: true, // True requires Chrome to be launched with remote-debugging-port arg. False causes a warning banner in the UI.
+            webSocketPort: 9922, // chrome.exe --remote-debugging-port=9922
+            profilerSamplingInterval: 20 // milliseconds
+        }
+    },
     ScrollMonitoring: {enabled: true, snapshotInterval: 1000, pushInterval: 15, eventInit: "page_ready"},
     ResizeMonitoring: {enabled: true, eventInit: "dom_loaded"},
-    DomMonitoring: {enabled: true, eventInit: "page_ready", pushInterval: 5, pushFullInterval: 30,
-        changesCountToSendFullBody: 250, dataTimeout: 30000},
+    DomMonitoring: {enabled: true, eventInit: "page_ready", pushInterval: 10, pushFullInterval: 300, dataTimeout: 30000},
     PopupDialogMonitoring: {enabled: true},
     ConsoleMonitoring: {enabled: true},
     HangMonitoring: { enabled: false, pingInterval: 10, minHangSeconds: 15 }
@@ -35,6 +47,7 @@ GermainAPM.init({
         return _document['title'];
     },
     DATA_TIMEOUT: 5000, // how long we can try to send collect data back (in ms)
+    WITH_CREDENTIALS: false, // send requests with credentials/cookies
     USER_CLICK: {
         count: 0,
         refreshInterval: 15, // (in seconds) we check periodically if we can close current user click txn and send current cum. txn
@@ -50,11 +63,11 @@ GermainAPM.init({
         }
     },
     EXCLUDE_URLS: [
-        /germainapm-.+-component.js/i,
-        /germainapm-.+-init.js/i
+        /germainapm.*\.js/i
     ]
 }, {
-    appName: 'AngularJS',
+    appName: appName || 'AngularJS',
+    serverHost: serverHost,
     username: '<default>',
     session: BOOMR.utils.session.getSessionId,
     sequence: BOOMR.utils.session.getSequence
