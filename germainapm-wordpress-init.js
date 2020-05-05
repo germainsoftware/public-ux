@@ -56,7 +56,8 @@ GermainAPM.init(beaconUrl,
         labelGenerator: undefined // use default generator
     },
     EXCLUDE_URLS: [
-        /germainapm.*\.js/i
+        /germainapm.*\.js/i,
+        /uxprofile\?monitoringProfile/i
     ]
 }, {
     appName: appName || 'Wordpress',

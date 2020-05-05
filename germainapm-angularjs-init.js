@@ -63,7 +63,8 @@ GermainAPM.init(beaconUrl,
         }
     },
     EXCLUDE_URLS: [
-        /germainapm.*\.js/i
+        /germainapm.*\.js/i,
+        /uxprofile\?monitoringProfile/i
     ]
 }, {
     appName: appName || 'AngularJS',

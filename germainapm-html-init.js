@@ -55,14 +55,15 @@ GermainAPM.init(beaconUrl,
         excludeUrls: [],
         labelGenerator: function(){
             if(window.location.hash){
-                return window.location.hash.slice(1);
+                return decodeURIComponent(window.location.hash.slice(1));
             } else {
                 return window.location.pathname;
             }
         }
     },
     EXCLUDE_URLS: [
-        /germainapm.*\.js/i
+        /germainapm.*\.js/i,
+        /uxprofile\?monitoringProfile/i
     ]
 }, {
     appName: appName || 'Html',

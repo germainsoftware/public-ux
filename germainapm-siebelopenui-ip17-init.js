@@ -80,6 +80,7 @@ GermainAPM.init(beaconUrl,
     },
     EXCLUDE_URLS: [ // exclude data points from monitoring by full URL (including query string)
         /germainapm.*\.js/i,
+        /uxprofile\?monitoringProfile/i,
         /SWEService=Communications/,
         /SWECmd=InvokeMethod&SWEService=Message\+Bar&SWEMethod=UpdatePrefMsg/,
         /SWECmd=InvokeMethod&SWEService=SWE\+Command\+Manager&SWEMethod=BatchCanInvoke/,

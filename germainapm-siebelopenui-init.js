@@ -1,6 +1,6 @@
 /* global GermainAPM, GermainAPMSiebelOpenUIUtils, beaconUrl, appName, serverHost */
 
-GermainAPM.init("http://localhost:8080/ingestion/beacon",
+GermainAPM.init(beaconUrl,
 {
     AsyncMonitoring: {enabled: true, taggingEnabled: false,
         /*additionalInfoLookup: GermainAPMSiebelOpenUIUtils.additionalInfoLookup*/
@@ -79,6 +79,7 @@ GermainAPM.init("http://localhost:8080/ingestion/beacon",
     },
     EXCLUDE_URLS: [ // exclude data points from monitoring by full URL (including query string)
         /germainapm.*\.js/i,
+        /uxprofile\?monitoringProfile/i,
         /SWEService=Communications/,
         /SWECmd=InvokeMethod&SWEService=Message\+Bar&SWEMethod=UpdatePrefMsg/,
         /SWECmd=InvokeMethod&SWEService=SWE\+Command\+Manager&SWEMethod=BatchCanInvoke/,
@@ -87,8 +88,8 @@ GermainAPM.init("http://localhost:8080/ingestion/beacon",
     SESSION_MARKER_END: ["Logout", "Log Out", "Utloggning"],
     REQUEST_INDEX_FILTER: GermainAPMSiebelOpenUIUtils.requestIndexFilter
 }, {
-    appName: 'ang',
-    serverHost: 'localhost',
+    appName: appName || 'Siebel',
+    serverHost: serverHost,
     username: GermainAPMSiebelOpenUIUtils.usernameLookup,
     session: GermainAPMSiebelOpenUIUtils.sessionLookup,
     sequence: BOOMR.utils.session.getSequence //GermainAPMSiebelOpenUIUtils.correlationIdLookup

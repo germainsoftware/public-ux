@@ -22,7 +22,8 @@ GermainAPM.init(beaconUrl,
     },
     DATA_TIMEOUT : 10000, // how long we can try to send collect data back (in ms)
     EXCLUDE_URLS: [
-        /germainapm.*\.js/i
+        /germainapm.*\.js/i,
+        /uxprofile\?monitoringProfile/i
     ]
 }, {
     appName: appName || 'Siebel',
