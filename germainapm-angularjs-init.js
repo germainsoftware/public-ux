@@ -33,7 +33,7 @@ GermainAPM.init(beaconUrl,
         }
     },
     ScrollMonitoring: {enabled: true, snapshotInterval: 1000, pushInterval: 15, eventInit: "page_ready"},
-    ResizeMonitoring: {enabled: true, eventInit: "dom_loaded"},
+    MediaStateMonitoring: {enabled: true},
     DomMonitoring: {enabled: sessionReplayMonitoring, eventInit: "page_ready", pushInterval: 10, pushFullInterval: 300, dataTimeout: 30000},
     PopupDialogMonitoring: {enabled: true},
     RenderingMonitoring: {enabled: renderingTimeMonitoring},

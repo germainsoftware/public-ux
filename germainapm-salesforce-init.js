@@ -1,4 +1,4 @@
-/* global GermainAPM, GermainAPMSalesforceUtils, beaconUrl, appName, serverHost */
+/* global GermainAPM, GermainAPMSalesforceUtils, beaconUrl, appName, serverHost, scriptTimeMonitoring, renderingTimeMonitoring, networkRequestsMonitoring, sessionReplayMonitoring */
 
 GermainAPM.init(beaconUrl,
 {
@@ -26,7 +26,7 @@ GermainAPM.init(beaconUrl,
         pushInterval: 15, eventInit: "page_ready"},
     PopupDialogMonitoring: {enabled: true},
     RenderingMonitoring: {enabled: renderingTimeMonitoring},
-    ResizeMonitoring: {enabled: true, eventInit: "dom_loaded"},
+    MediaStateMonitoring: {enabled: true},
     RT: {enabled: true},
     ScriptingMonitoring: {enabled: scriptTimeMonitoring},
     DebuggerMonitoring: {
