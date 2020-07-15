@@ -1,8 +1,8 @@
-/* global GermainAPM, GermainAPMSiebelOpenUIUtils, beaconUrl, appName, serverHost, sessionReplayMonitoring, networkRequestsMonitoring, renderingTimeMonitoring, scriptTimeMonitoring */
+/* global GermainAPM, GermainAPMSiebelOpenUIUtils, beaconUrl, appName, serverHost */
 
 GermainAPM.init(beaconUrl,
 {
-    AsyncMonitoring: {enabled: networkRequestsMonitoring, taggingEnabled: false
+    AsyncMonitoring: {enabled: networkRequestsMonitoring, taggingEnabled: false,
         /*additionalInfoLookup: GermainAPMSiebelOpenUIUtils.additionalInfoLookup*/
     },
     ChangeMonitoring: {enabled: true, eventInit: "page_ready", 
@@ -32,7 +32,7 @@ GermainAPM.init(beaconUrl,
         pushInterval: 15, eventInit: "page_ready"},
     PopupDialogMonitoring: {enabled: true, messageParser: GermainAPMSiebelOpenUIUtils.popupMessageParser},
     RenderingMonitoring: {enabled: renderingTimeMonitoring},
-    MediaStateMonitoring: {enabled: true},
+    ResizeMonitoring: {enabled: true, eventInit: "dom_loaded"},
     RT: {enabled: true},
     ScriptingMonitoring: {enabled: scriptTimeMonitoring},
     DebuggerMonitoring: {
