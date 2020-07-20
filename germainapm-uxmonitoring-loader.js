@@ -11,14 +11,19 @@ function germainApmInit(servicesUrl, monitoringProfileName, appName, serverHost)
 
     serverHost = serverHost || null;
     var ingestionUrl = servicesUrl + '/ingestion';
-
     var profile = readLocalProfile();
-    runProfile(profile);
-    var username = getUsernameFromMonitoring(); // After monitoring is initialized, we may have a username
+    var username;
 
-    if (!localProfileIsRecent())
-        (window.requestIdleCallback || window.setTimeout)(fetchLatestProfile.bind(null, profile ? profile.scriptVersion : null));
-
+    if (localProfileIsRecent(24 * 60)) {
+        runProfile(profile);
+        username = getUsernameFromMonitoring();
+        if (!localProfileIsRecent(30)) {
+            (window.requestIdleCallback || window.setTimeout)(fetchLatestProfile.bind(null, profile ? profile.scriptVersion : null));
+        }
+    } else {
+        fetchLatestProfile(profile ? profile.scriptVersion : null);
+    }
+    
 
 
     function getUsernameFromMonitoring() {
@@ -79,10 +84,8 @@ function germainApmInit(servicesUrl, monitoringProfileName, appName, serverHost)
                 profile.monitoringScript = newProfile.monitoringScript;
             profile.scriptVersion = newProfile.scriptVersion;
         }
-        //profile.constantsObj = newProfile.constantsObj;
-        //profile.settingsObj = newProfile.settingsObj;
         profile.initScript = newProfile.initScript;
-        
+
         window.localStorage.setItem('germainMonitoringProfileMetadata', JSON.stringify({
             updateTime: new Date().getTime(),
             forProfile: monitoringProfileName,
@@ -90,17 +93,17 @@ function germainApmInit(servicesUrl, monitoringProfileName, appName, serverHost)
         }));
         window.localStorage.setItem('germainMonitoringProfile', JSON.stringify(profile));
 
-        runProfile(profile);
+        runProfile(profile); // Run only after updating localStorage metadata
     }
 
-    function localProfileIsRecent() {
+    function localProfileIsRecent(minutes) {
         if (!window.localStorage.germainMonitoringProfile)
             return false;
         var md = readLocalProfileMetadata();
         if (md) {
             if (md.forProfile === monitoringProfileName
                     && (!username || md.forUsername === username)
-                    && md.updateTime > new Date().getTime() - 30*60*1000) // Newer than 30 mins ago
+                    && md.updateTime > new Date().getTime() - minutes*60*1000) // Newer than 30 mins ago
                 return true;
         }
         return false;
