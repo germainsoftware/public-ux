@@ -9,7 +9,7 @@ germainApmInit(
 
 function germainApmInit(servicesUrl, monitoringProfileName, appName, serverHost) {
 
-    serverHost = serverHost || null;
+    serverHost = serverHost || window.location.host;
     var ingestionUrl = servicesUrl + '/ingestion';
     var profile = readLocalProfile();
     var username;
@@ -18,7 +18,9 @@ function germainApmInit(servicesUrl, monitoringProfileName, appName, serverHost)
         runProfile(profile);
         username = getUsernameFromMonitoring();
         if (!localProfileIsRecent(30)) {
-            (window.requestIdleCallback || window.setTimeout)(fetchLatestProfile.bind(null, profile ? profile.scriptVersion : null));
+            (window.requestIdleCallback || window.setTimeout)(function () {
+                fetchLatestProfile(profile ? profile.scriptVersion : null);
+            });
         }
     } else {
         fetchLatestProfile(profile ? profile.scriptVersion : null);
@@ -46,10 +48,13 @@ function germainApmInit(servicesUrl, monitoringProfileName, appName, serverHost)
         
         try {
             var install = new Function(profile.monitoringScript);                      // Isolated from local scope. Must define globals through window.
-            var init    = new Function('beaconUrl', 'appName', 'serverHost', profile.initScript); // Isolated from local scope. Must reference globals through window.
+            var init    = new Function('beaconUrl', 'appName', 'serverHost', 'excludedUsernames', profile.initScript); // Isolated from local scope. Must reference globals through window.
             
             install();
-            init(ingestionUrl + '/beacon', appName, serverHost);
+            var excludedUsernames /*:string[]*/ = profile.excludedUsernames && profile.excludedUsernames.contents instanceof Array
+                ? profile.excludedUsernames.contents
+                : [];
+            init(ingestionUrl + '/beacon', appName, serverHost, excludedUsernames);
         } catch(e) {
             console.error("germainAPM: Exception during initialization of UX monitoring scripts. ", e);
         }
@@ -79,12 +84,8 @@ function germainApmInit(servicesUrl, monitoringProfileName, appName, serverHost)
         if (!newProfile) return;
         
         var profile = readLocalProfile() || {};
-        if (newProfile.scriptVersion) {
-            if (newProfile.scriptVersion !== profile.scriptVersion)
-                profile.monitoringScript = newProfile.monitoringScript;
-            profile.scriptVersion = newProfile.scriptVersion;
-        }
-        profile.initScript = newProfile.initScript;
+        for(let field in newProfile) // Keeps existing monitoringScript value if not present in newProfile (because it was up to date)
+            profile[field] = newProfile[field];
 
         window.localStorage.setItem('germainMonitoringProfileMetadata', JSON.stringify({
             updateTime: new Date().getTime(),
