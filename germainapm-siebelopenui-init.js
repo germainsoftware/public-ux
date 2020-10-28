@@ -76,7 +76,7 @@ GermainAPM.init(beaconUrl,
             /GetAlarmInstances/,
             /GetAlarms/
         ],
-        labelGenerator: GermainAPMSiebelOpenUIUtils.viewLookup
+        labelGenerator: GermainAPMSiebelOpenUIUtils.labelLookup
     },
     EXCLUDE_URLS: [ // exclude data points from monitoring by full URL (including query string)
         /germainapm.*\.js/i,
