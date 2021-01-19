@@ -1,4 +1,5 @@
-/* global GermainAPM, GermainAPMSiebelOpenUIUtils, beaconUrl, appName, serverHost, renderingTimeMonitoring, sessionReplayMonitoring, networkRequestsMonitoring, scriptTimeMonitoring */
+/* global GermainAPM, GermainAPMSiebelOpenUIUtils, beaconUrl, appName, serverHost, renderingTimeMonitoring,
+sessionReplayMonitoring, networkRequestsMonitoring, scriptTimeMonitoring, replayExclusions, fieldExclusions, factEnrichers, profileName */
 
 GermainAPM.init(beaconUrl,
 {
@@ -48,7 +49,8 @@ GermainAPM.init(beaconUrl,
     ScrollMonitoring: {enabled: true, snapshotInterval: 1000, pushInterval: 15, eventInit: "page_ready"},
     StaticResourcesMonitoring: {enabled: sessionReplayMonitoring, eventInit: "page_ready" },
     VisibilityMonitoring: {enabled: true, eventInit: "page_ready"},
-    HangMonitoring: { enabled: true, pingInterval: 10, minHangSeconds: 15 }
+    HangMonitoring: { enabled: true, pingInterval: 10, minHangSeconds: 15 },
+    ContentIndex: { enabled: true, includeVisibleText: true, includeInputFields: true }
 }, {
     CORS_PROXY_URL: null,
     DATA_QUEUE_PUSH_INTERVAL: 10,
@@ -88,7 +90,11 @@ GermainAPM.init(beaconUrl,
         /SWECmd=InvokeMethod.*&SWEMethod=GetProfileAttr.*&SWEIPS=/
     ],
     SESSION_MARKER_END: ["Logout", "Log Out", "Utloggning"],
-    REQUEST_INDEX_FILTER: GermainAPMSiebelOpenUIUtils.requestIndexFilter17
+    REQUEST_INDEX_FILTER: GermainAPMSiebelOpenUIUtils.requestIndexFilter17,
+    REPLAY_EXCLUSIONS: replayExclusions,
+    FIELD_EXCLUSIONS: fieldExclusions,
+    FACT_ENRICHERS: factEnrichers,
+    PROFILE_NAME: profileName
 }, {
     appName: appName || 'Siebel',
     serverHost: serverHost,

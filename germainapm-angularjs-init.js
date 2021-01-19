@@ -1,4 +1,4 @@
-/* global GermainAPM, beaconUrl, appName, serverHost */
+/* global GermainAPM, beaconUrl, appName, serverHost, replayExclusions, fieldExclusions, factEnrichers, profileName */
 
 GermainAPM.init(beaconUrl,
 {
@@ -38,7 +38,8 @@ GermainAPM.init(beaconUrl,
     PopupDialogMonitoring: {enabled: true},
     RenderingMonitoring: {enabled: renderingTimeMonitoring},
     ConsoleMonitoring: {enabled: true},
-    HangMonitoring: { enabled: true, pingInterval: 10, minHangSeconds: 15 }
+    HangMonitoring: { enabled: true, pingInterval: 10, minHangSeconds: 15 },
+    ContentIndex: { enabled: true, includeVisibleText: true, includeInputFields: true }
 }, {
     DATA_QUEUE_PUSH_INTERVAL: 5,
     SEND_SYNC_ON_UNLOAD: true, // this only applies when the navigator.sendBeacon is unavailable (IE)
@@ -67,7 +68,11 @@ GermainAPM.init(beaconUrl,
     EXCLUDE_URLS: [
         /germainapm.*\.js/i,
         /uxprofile\?monitoringProfile/i
-    ]
+    ],
+    REPLAY_EXCLUSIONS: replayExclusions,
+    FIELD_EXCLUSIONS: fieldExclusions,
+    FACT_ENRICHERS: factEnrichers,
+    PROFILE_NAME: profileName
 }, {
     appName: appName || 'AngularJS',
     serverHost: serverHost,

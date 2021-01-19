@@ -1,4 +1,5 @@
-/* global GermainAPM, GermainAPMSalesforceUtils, beaconUrl, appName, serverHost, scriptTimeMonitoring, renderingTimeMonitoring, networkRequestsMonitoring, sessionReplayMonitoring */
+/* global GermainAPM, GermainAPMSalesforceUtils, beaconUrl, appName, serverHost, scriptTimeMonitoring,
+renderingTimeMonitoring, networkRequestsMonitoring, sessionReplayMonitoring, replayExclusions, fieldExclusions, factEnrichers, profileName */
 
 GermainAPM.init(beaconUrl,
 {
@@ -10,10 +11,11 @@ GermainAPM.init(beaconUrl,
         clickContainerLookup: GermainAPMSalesforceUtils.clickContainerLookup,
         eventInit: "page_ready"
     },
-    ConsoleMonitoring: {enabled: true},
+    ConsoleMonitoring: {enabled: true, errorEventListenerEnabled: false},
     CpuMonitoring: {enabled: false, repeatSeconds: 60, samplesAveragedPerRound: 12, sampleTimeMillis: 2000, eventInit: "page_ready"},
-    DomMonitoring: {enabled: sessionReplayMonitoring, eventInit: "page_ready", pushInterval: 10,
-        pushFullInterval: 300, dataTimeout: 30000, excludeAriaAttributes: true /*,excludeAttributes:[],excludeIds:[]*/},
+    DomMonitoring: {enabled: sessionReplayMonitoring, compressContent: false,
+        pushInterval: 10, pushFullInterval: 300, dataTimeout: 30000,
+        excludeAriaAttributes: true /*,excludeAttributes:[],excludeIds:[]*/},
     FetchMonitoring: {enabled: networkRequestsMonitoring},
     FocusMonitoring: {enabled: sessionReplayMonitoring, pushInterval: 15, eventInit: "page_ready"},
     IframeMonitoring: {enabled: networkRequestsMonitoring, eventInit: "page_ready"},
@@ -42,15 +44,18 @@ GermainAPM.init(beaconUrl,
     ScrollMonitoring: {enabled: true, snapshotInterval: 1000, pushInterval: 15, eventInit: "page_ready"},
     StaticResourcesMonitoring: {enabled: sessionReplayMonitoring, eventInit: "page_ready"},
     VisibilityMonitoring: {enabled: true, eventInit: "page_ready"},
-    HangMonitoring: { enabled: true, pingInterval: 10, minHangSeconds: 15 }
+    HangMonitoring: { enabled: true, pingInterval: 10, minHangSeconds: 15 },
+    ContentIndex: { enabled: true, includeVisibleText: true, includeInputFields: true }
 }, {
     CORS_PROXY_URL: null,
     DATA_QUEUE_PUSH_INTERVAL: 10,
+    USE_WEB_WORKER: false,
     DATA_TIMEOUT: 10000, // how long we can try to send collect data back (in ms)
     PAGE_TITLE: GermainAPMSalesforceUtils.titleLookup, // extract request title
     RESPONSE_BODY_MONITORING: true, // catch response body 
     RESPONSE_BODY_PARSER: null,
     REQUEST_BODY_MONITORING: true, // catch POST request body
+    REQUEST_BODY_PARSER: function(fact, reqBody){ fact.requestBody = decodeURIComponent(reqBody);},
     SEND_SYNC_ON_UNLOAD: true, // this only applies when the navigator.sendBeacon is unavailable (IE)
     WITH_CREDENTIALS: false, // send requests with credentials/cookies
     USER_CLICK: {
@@ -67,7 +72,11 @@ GermainAPM.init(beaconUrl,
         /germainapm.*\.js/i,
         /uxprofile\?monitoringProfile/i,
         /cometd\/replay/
-    ]
+    ],
+    REPLAY_EXCLUSIONS: replayExclusions,
+    FIELD_EXCLUSIONS: fieldExclusions,
+    FACT_ENRICHERS: factEnrichers,
+    PROFILE_NAME: profileName
 }, {
     appName: appName || 'Salesforce',
     serverHost: serverHost,

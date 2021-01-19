@@ -9,6 +9,8 @@ germainApmInit(
 
 function germainApmInit(servicesUrl, monitoringProfileName, appName, serverHost) {
 
+    germainApmInit.runLocalProfileRemotely = runLocalProfileRemotely; // Public export
+
     serverHost = serverHost || window.location.hostname;
     var ingestionUrl = servicesUrl + '/ingestion';
     var profile = readLocalProfile();
@@ -32,6 +34,12 @@ function germainApmInit(servicesUrl, monitoringProfileName, appName, serverHost)
     
 
 
+    function runLocalProfileRemotely(proxyWindow) {
+        var profile = readLocalProfile();
+        if (profile)
+            runProfileInContext(profile, proxyWindow);
+    }
+    
     function getUsernameFromMonitoring() {
         try { return window.BOOMR.data.username; }
         catch(e) { return null; }
@@ -40,7 +48,7 @@ function germainApmInit(servicesUrl, monitoringProfileName, appName, serverHost)
     function runProfile(profile) {
         if (!profile || typeof profile !== 'object') return;
         if (!profile.monitoringScript) return;
-        if (germainApmInit.hasRunProfile) return;
+        if (germainApmInit.hasRunProfile || window.BOOMR) return;
         
         if (username) {
             var md = readLocalProfileMetadata();
@@ -50,22 +58,28 @@ function germainApmInit(servicesUrl, monitoringProfileName, appName, serverHost)
         
         germainApmInit.hasRunProfile = true;
         
+        runProfileInContext(profile, window);
+    }
+    
+    function runProfileInContext(profile, windowContext) {
         var taskLabel = '';
         try {
             taskLabel = "creation of monitoring install function";
-            var install = new Function(profile.monitoringScript);                      // Isolated from local scope. Must define globals through window.
+            var install = windowContext.Function(profile.monitoringScript); // Isolated from local scope. Must define globals through window.
             
             taskLabel = "creation of init function";
-            var init    = new Function('beaconUrl', 'appName', 'serverHost', 'excludedUsernames', profile.initScript); // Isolated from local scope. Must reference globals through window.
+            var init    = windowContext.Function('beaconUrl', 'appName', 'serverHost', 'excludedUsernames', 'fieldExclusions',
+                'replayExclusions', 'factEnrichers', 'profileName', profile.initScript); // Isolated from local scope. Must reference globals through window.
             
             taskLabel = "evaluation of monitoring script";
             install();
 
             taskLabel = "evaluation of init script";
-            var excludedUsernames /*:string[]*/ = profile.excludedUsernames && profile.excludedUsernames.contents instanceof Array
-                ? profile.excludedUsernames.contents
-                : [];
-            init(ingestionUrl + '/beacon', appName, serverHost, excludedUsernames);
+            var excludedUsernames = profile.excludedUsernames && profile.excludedUsernames.contents instanceof Array ? profile.excludedUsernames.contents : [];
+            var fieldExclusions = profile.fieldExclusions && profile.fieldExclusions.contents instanceof Array ? profile.fieldExclusions.contents : [];
+            var replayExclusions = profile.replayExclusions && profile.replayExclusions.contents instanceof Array ? profile.replayExclusions.contents : [];
+            var factEnrichers = profile.factEnrichers && profile.factEnrichers.contents instanceof Array ? profile.factEnrichers.contents : [];
+            init(ingestionUrl + '/beacon', appName, serverHost, excludedUsernames, fieldExclusions, replayExclusions, factEnrichers, monitoringProfileName);
         } catch(e) {
             sendErrorReport("Exception during " + taskLabel, e instanceof Error ? e.stack : e);
         }
@@ -147,12 +161,17 @@ function germainApmInit(servicesUrl, monitoringProfileName, appName, serverHost)
 
     function sendErrorReport(errorLabel, details) {
         var data = {
-            category: 'Browser:UX-Monitoring-Profile Loader Error',
+            type: 'Browser:UX-Monitoring-Profile Loader Error',
+            myClassName: 'com.germainsoftware.apm.data.model.UxEvent',
             timestamp: new Date().getTime(),
             name: errorLabel,
-            hostname: serverHost,
-            applicationName: appName,
-            monitoringProfileName: monitoringProfileName,
+            system: {
+                hostname: serverHost
+            },
+            application: {
+                name: appName,
+                component: monitoringProfileName
+            },
             path: window.location.href,
             sequence: getBrowserFingerprint(),
             details: JSON.stringify(details)
@@ -183,5 +202,4 @@ function germainApmInit(servicesUrl, monitoringProfileName, appName, serverHost)
             return dashes ? "-" + eight.substr(0, 4) + "-" + eight.substr(4, 4) : eight;
         }
     }
-
 }

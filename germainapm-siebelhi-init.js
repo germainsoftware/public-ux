@@ -1,4 +1,4 @@
-/* global GermainAPM, GermainAPMSiebelHIUtils, beaconUrl, appName, serverHost */
+/* global GermainAPM, GermainAPMSiebelHIUtils, beaconUrl, appName, serverHost, replayExclusions, fieldExclusions, factEnrichers, profileName */
 
 GermainAPM.init(beaconUrl,
 {
@@ -24,7 +24,11 @@ GermainAPM.init(beaconUrl,
     EXCLUDE_URLS: [
         /germainapm.*\.js/i,
         /uxprofile\?monitoringProfile/i
-    ]
+    ],
+    REPLAY_EXCLUSIONS: replayExclusions,
+    FIELD_EXCLUSIONS: fieldExclusions,
+    FACT_ENRICHERS: factEnrichers,
+    PROFILE_NAME: profileName
 }, {
     appName: appName || 'Siebel',
     serverHost: serverHost,
