@@ -67,6 +67,7 @@ GermainAPM.init(beaconUrl,
     },
     EXCLUDE_URLS: [
         /germainapm.*\.js/i,
+        /ingestion\/beacon/i,
         /uxprofile\?monitoringProfile/i
     ],
     REPLAY_EXCLUSIONS: replayExclusions,

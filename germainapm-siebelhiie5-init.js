@@ -23,6 +23,7 @@ GermainAPM.init(beaconUrl,
     DATA_TIMEOUT : 10000, // how long we can try to send collect data back (in ms)
     EXCLUDE_URLS: [
         /germainapm.*\.js/i,
+        /ingestion\/beacon/i,
         /uxprofile\?monitoringProfile/i
     ],
     REPLAY_EXCLUSIONS: replayExclusions,

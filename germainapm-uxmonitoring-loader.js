@@ -30,9 +30,7 @@ function germainApmInit(servicesUrl, monitoringProfileName, appName, serverHost)
         }
     } catch(e) {
         sendErrorReport("Exception during loader execution", e instanceof Error ? e.stack : e);
-    }
-    
-
+    } 
 
     function runLocalProfileRemotely(proxyWindow) {
         var profile = readLocalProfile();
@@ -80,6 +78,7 @@ function germainApmInit(servicesUrl, monitoringProfileName, appName, serverHost)
             var replayExclusions = profile.replayExclusions && profile.replayExclusions.contents instanceof Array ? profile.replayExclusions.contents : [];
             var factEnrichers = profile.factEnrichers && profile.factEnrichers.contents instanceof Array ? profile.factEnrichers.contents : [];
             init(ingestionUrl + '/beacon', appName, serverHost, excludedUsernames, fieldExclusions, replayExclusions, factEnrichers, monitoringProfileName);
+            sendAgentStatusFact('', true);
         } catch(e) {
             sendErrorReport("Exception during " + taskLabel, e instanceof Error ? e.stack : e);
         }
@@ -155,26 +154,33 @@ function germainApmInit(servicesUrl, monitoringProfileName, appName, serverHost)
             else
                 sendErrorReport("Failed to fetch profile", 'status: ' + event.target.status);
         });
+        req.noIntercept = true;
         req.open("GET", ingestionUrl + "/uxprofile?" + queryTerms.join('&'));
         req.send();
     }
 
     function sendErrorReport(errorLabel, details) {
+        sendAgentStatusFact(JSON.stringify({
+            errorDetails: details,
+            errorLabel: errorLabel,
+            path: window.location.href,
+            userAgent: navigator.userAgent
+        }), false);
+    }
+
+    function sendAgentStatusFact(details, status) {
         var data = {
-            type: 'Browser:UX-Monitoring-Profile Loader Error',
-            myClassName: 'com.germainsoftware.apm.data.model.UxEvent',
+            type: 'Agent:Status',
+            myClassName: 'com.germainsoftware.apm.data.model.InternalEvent',
             timestamp: new Date().getTime(),
-            name: errorLabel,
+            name: 'Web UX',
             system: {
                 hostname: serverHost
             },
-            application: {
-                name: appName,
-                component: monitoringProfileName
-            },
-            path: window.location.href,
-            sequence: getBrowserFingerprint(),
-            details: JSON.stringify(details)
+            engine: appName + '|' + monitoringProfileName,
+            node: serverHost,
+            details: details,
+            value: status? 1.0 : 0.0
         };
 
         var url = servicesUrl + '/ingestion/beacon?bulk=true';
@@ -183,6 +189,7 @@ function germainApmInit(servicesUrl, monitoringProfileName, appName, serverHost)
             navigator.sendBeacon(url, body);
         } else {
             var req = new XMLHttpRequest();
+            req.noIntercept = true;
             req.open("POST", url);
             req.send(body);
         }

@@ -70,6 +70,7 @@ GermainAPM.init(beaconUrl,
     },
     EXCLUDE_URLS: [// exclude data points from monitoring by full URL (including query string)
         /germainapm.*\.js/i,
+        /ingestion\/beacon/i,
         /uxprofile\?monitoringProfile/i,
         /cometd\/replay/
     ],
