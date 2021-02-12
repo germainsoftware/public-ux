@@ -170,7 +170,7 @@ function germainApmInit(servicesUrl, monitoringProfileName, appName, serverHost)
 
     function sendAgentStatusFact(details, status) {
         var data = {
-            type: 'Agent:Status',
+            type: 'GermainAPM:Agent Status',
             myClassName: 'com.germainsoftware.apm.data.model.InternalEvent',
             timestamp: new Date().getTime(),
             name: 'Web UX',
